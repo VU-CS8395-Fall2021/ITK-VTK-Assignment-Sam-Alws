@@ -284,17 +284,16 @@ public:
 
 int main ( int argc, char * argv[] )
 {
-  if (argc < 4 || argc > 8) {
-    std::cout << "Wrong number of args; expected: " << argv[0] << " inputImage inputSegmentation outputImage (delta = 3) (minFA = 0.2) (maxIter = 300) (outputSegmentation = \"\")" << std::endl;
+  if (argc < 2 || argc > 6) {
+    std::cout << "Wrong number of args; expected: " << argv[0] << " inputImage (inputSegmentation = "") (delta = 3) (minFA = 0.2) (maxIter = 300)" << std::endl;
     return 1;
   }
 
   InputImageType::Pointer input = readImgFile<InputImageType>(argv[1]);
-  SegImageType  ::Pointer seg   = readImgFile<SegImageType>(argv[2]);
 
-  double delta = (argc > 4) ? strtof(argv[4],NULL) : 3;
-  double minFA = (argc > 5) ? strtof(argv[5],NULL) : .01;
-  int maxIter  = (argc > 6) ? strtod(argv[6],NULL) : 10; // 300;
+  double delta = (argc > 3) ? strtof(argv[3],NULL) : 3;
+  double minFA = (argc > 4) ? strtof(argv[4],NULL) : .2;
+  int maxIter  = (argc > 5) ? strtod(argv[5],NULL) : 300;
 
   if (delta == 0) {
     std::cout << "Bad value for delta" << std::endl;
@@ -396,7 +395,10 @@ int main ( int argc, char * argv[] )
   vtkSmartPointer<TractographyCommand> myCallback = vtkSmartPointer<TractographyCommand>::New();
   myCallback->setParams(delta, minFA, maxIter, input, fa, renderer2, centerDiff);
   myCallback->addPoint({72, 72, 42});
-  myCallback->addSeg(seg);
+  if (argc > 2) {
+    SegImageType::Pointer seg = readImgFile<SegImageType>(argv[2]);
+    myCallback->addSeg(seg);
+  }
   interactor->AddObserver(vtkCommand::TimerEvent, myCallback, 0);
   interactor->AddObserver(vtkCommand::RightButtonPressEvent, myCallback, 0);
 
